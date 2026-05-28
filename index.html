@@ -177,6 +177,7 @@ function renderTemplates(){
         <div class="card-text">${item.text}</div>
         <div class="row">
           <button class="sub useBtn">この文章を使う</button>
+          <button class="main quickOpenBtn">これでリプ画面を開く</button>
           <button class="ghost favBtn">${item.favorite ? "お気に入り解除" : "お気に入り"}</button>
           <button class="ghost deleteBtn">削除</button>
         </div>
@@ -186,6 +187,19 @@ function renderTemplates(){
         card.classList.add("active");
         replyText.value = item.text;
         updateCount();
+      };
+      card.querySelector(".quickOpenBtn").onclick = ()=>{
+        const tweetId = getTweetId(postUrl.value.trim());
+        if(!postUrl.value.trim()) return showError("XのURLを入力してください。");
+        if(!tweetId) return showError("投稿IDを取得できませんでした。");
+        const finalUrl =
+          `https://twitter.com/intent/tweet?in_reply_to=${tweetId}&text=${encodeURIComponent(item.text)}`;
+        replyText.value = item.text;
+        updateCount();
+        resultUrl.textContent = finalUrl;
+        openBtn.href = finalUrl;
+        resultBox.classList.add("activeBox");
+        window.open(finalUrl, "_blank");
       };
       card.querySelector(".favBtn").onclick = ()=>{
         item.favorite = !item.favorite;

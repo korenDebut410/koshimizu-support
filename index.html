@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XリプURLメーカー</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  padding:22px;
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+  background:#f7fbff;
+  color:#203040;
+}
+.app{
+  max-width:920px;
+  margin:auto;
+  background:white;
+  border-radius:28px;
+  padding:24px;
+  box-shadow:0 18px 50px rgba(70,130,180,.18);
+}
+h1{margin:0 0 8px;font-size:30px}
+p{color:#66788a;line-height:1.7}
+label{display:block;margin:18px 0 8px;font-weight:800}
+input,textarea{
+  width:100%;
+  border:1px solid #d9ebf8;
+  border-radius:16px;
+  padding:14px;
+  font-size:15px;
+}
+textarea{min-height:150px;line-height:1.7}
+button,a{
+  border:0;
+  border-radius:999px;
+  padding:12px 16px;
+  font-weight:900;
+  cursor:pointer;
+  text-decoration:none;
+  display:inline-block;
+}
+.main{background:#1d9bf0;color:white}
+.sub{background:#eaf7ff;color:#1d9bf0}
+.ghost{background:#f2f7fb;color:#567}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.templates{
+  display:flex;
+  gap:12px;
+  overflow-x:auto;
+  padding:4px 0 14px;
+}
+.card{
+  flex:0 0 270px;
+  border:1px solid #d9ebf8;
+  border-radius:22px;
+  padding:14px;
+  background:#fff;
+  box-shadow:0 8px 22px rgba(70,130,180,.1);
+}
+.card.favorite{order:-1;border-color:#1d9bf0}
+.card.active{outline:4px solid rgba(29,155,240,.18)}
+.card-title{font-weight:900;margin-bottom:8px}
+.card-text{
+  font-size:13px;
+  color:#66788a;
+  line-height:1.6;
+  display:-webkit-box;
+  -webkit-line-clamp:5;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.result,.error{
+  display:none;
+  margin-top:18px;
+  padding:14px;
+  border-radius:16px;
+}
+.result{background:#f5fbff;border:1px solid #d9ebf8}
+.error{background:#fff0f0;border:1px solid #ffcfcf;color:#d33}
+.activeBox{display:block}
+.urlbox{
+  word-break:break-all;
+  background:white;
+  border:1px dashed #abd6f7;
+  border-radius:12px;
+  padding:12px;
+  line-height:1.6;
+  font-size:13px;
+}
+.small{font-size:12px;color:#66788a}
+</style>
+</head>
+<body>
+<main class="app">
+<h1>XリプURLメーカー</h1>
+<p>XのURLを貼って、布教テンプレを選んで、返信用URLを作れます。テンプレ追加・お気に入り保存もできます。</p>
+<label>① XのポストURL</label>
+<input id="postUrl" placeholder="https://x.com/xxxxx/status/1234567890">
+<h2>③ 布教テンプレ</h2>
+<div class="templates" id="templates"></div>
+<h2>テンプレを追加</h2>
+<label>テンプレ名</label>
+<input id="newTitle" placeholder="例：丁寧お願い / 短文 / 熱量高め">
+<label>テンプレ本文</label>
+<textarea id="newText" placeholder="ここにテンプレ本文"></textarea>
+<div class="row">
+  <button class="sub" id="addTemplateBtn">テンプレを追加</button>
+  <button class="ghost" id="resetTemplatesBtn">初期テンプレに戻す</button>
+</div>
+<label>④ リプ文章</label>
+<textarea id="replyText" placeholder="テンプレを選ぶか、直接入力してください"></textarea>
+<div class="small"><span id="charCount">0</span>文字</div>
+<div class="row">
+  <button class="main" id="startBtn">スタート</button>
+  <button class="ghost" id="clearBtn">クリア</button>
+</div>
+<div class="error" id="errorBox"></div>
+<section class="result" id="resultBox">
+  <b>完成URL</b>
+  <div class="urlbox" id="resultUrl"></div>
+  <div class="row">
+    <button class="sub" id="copyBtn">URLをコピー</button>
+    <a class="main" id="openBtn" href="#" target="_blank">リプ画面を開く</a>
+  </div>
+</section>
+</main>
+<script>
+const defaultTemplates = [
+  {
+    id: crypto.randomUUID(),
+    title:"布教テンプレ①｜静かに闘志タイプ",
+    text:`おすすめから失礼します！小清水蓮くんを布教させてください🐱このオーディションでデビューしたいという気持ちが誰よりも強いと話していて、一緒に頑張る仲間からも「デビューしたい気持ちが伝わる」と言われるほど、静かに闘志を燃やしているアツい練習生です。投票のご検討よろしくお願いします🙇‍♀️`,
+    favorite:true
+  },
+  {
+    id: crypto.randomUUID(),
+    title:"布教テンプレ②｜グローバルランカー",
+    text:`おすすめから失礼します！小清水蓮くんを布教させてください🐱今回グローバルランカーでファイナルへの出場を手にし、まさに「新世界」の申し子です！日本からも世界からと注目の集まる彼のビジュアルは絶対にデビューメンバーに必要だと思っています！投票のご検討よろしくお願いします🙇‍♀️`,
+    favorite:false
+  },
+  {
+    id: crypto.randomUUID(),
+    title:"布教テンプレ③｜ギャップ沼",
+    text:`おすすめから失礼します！小清水蓮くんを布教させてください🐱可愛らしいこのビジュアルで元々愛嬌したりするのは得意ではなかったり、自認はクールだったり、しっかり者で自分の意見をズバッと言える漢気を持っています。ぜひそのギャップに溺れてほしいです！投票のご検討よろしくお願いします🙇‍♀️`,
+    favorite:false
+  },
+  {
+    id: crypto.randomUUID(),
+    title:"布教テンプレ④｜努力家・求心力",
+    text:`おすすめから失礼します！小清水蓮くんを布教させてください🐱前世や活動歴のない中初回8位に入れるほどの求心力があり、デビューグループのファン層の幅を必ず広げてくれると思います。分量が無い中でも朝練に一番に来るなど、ずっと真面目に頑張っていました。投票のご検討よろしくお願いします🙇‍♀️`,
+    favorite:false
+  }
+];
+let templatesData = JSON.parse(localStorage.getItem("templatesData") || "null") || defaultTemplates;
+const templates = document.getElementById("templates");
+const replyText = document.getElementById("replyText");
+const charCount = document.getElementById("charCount");
+const postUrl = document.getElementById("postUrl");
+const errorBox = document.getElementById("errorBox");
+const resultBox = document.getElementById("resultBox");
+const resultUrl = document.getElementById("resultUrl");
+const openBtn = document.getElementById("openBtn");
+function saveTemplates(){
+  localStorage.setItem("templatesData", JSON.stringify(templatesData));
+}
+function renderTemplates(){
+  templates.innerHTML = "";
+  [...templatesData]
+    .sort((a,b)=> Number(b.favorite) - Number(a.favorite))
+    .forEach(item=>{
+      const card = document.createElement("div");
+      card.className = "card" + (item.favorite ? " favorite" : "");
+      card.innerHTML = `
+        <div class="card-title">${item.favorite ? "⭐ " : ""}${item.title}</div>
+        <div class="card-text">${item.text}</div>
+        <div class="row">
+          <button class="sub useBtn">この文章を使う</button>
+          <button class="ghost favBtn">${item.favorite ? "お気に入り解除" : "お気に入り"}</button>
+          <button class="ghost deleteBtn">削除</button>
+        </div>
+      `;
+      card.querySelector(".useBtn").onclick = ()=>{
+        document.querySelectorAll(".card").forEach(c=>c.classList.remove("active"));
+        card.classList.add("active");
+        replyText.value = item.text;
+        updateCount();
+      };
+      card.querySelector(".favBtn").onclick = ()=>{
+        item.favorite = !item.favorite;
+        saveTemplates();
+        renderTemplates();
+      };
+      card.querySelector(".deleteBtn").onclick = ()=>{
+        if(confirm("このテンプレを削除しますか？")){
+          templatesData = templatesData.filter(t=>t.id !== item.id);
+          saveTemplates();
+          renderTemplates();
+        }
+      };
+      templates.appendChild(card);
+    });
+}
+function updateCount(){
+  charCount.textContent = replyText.value.length;
+}
+document.getElementById("addTemplateBtn").onclick = ()=>{
+  const title = document.getElementById("newTitle").value.trim();
+  const text = document.getElementById("newText").value.trim();
+  if(!title || !text){
+    alert("テンプレ名と本文を入力してください。");
+    return;
+  }
+  templatesData.push({
+    id: crypto.randomUUID(),
+    title,
+    text,
+    favorite:false
+  });
+  saveTemplates();
+  renderTemplates();
+  document.getElementById("newTitle").value = "";
+  document.getElementById("newText").value = "";
+};
+document.getElementById("resetTemplatesBtn").onclick = ()=>{
+  if(confirm("追加したテンプレも消えて、初期状態に戻ります。よろしいですか？")){
+    templatesData = defaultTemplates;
+    saveTemplates();
+    renderTemplates();
+  }
+};
+function getTweetId(url){
+  const match = url.match(/status\/(\d+)/);
+  return match ? match[1] : "";
+}
+function showError(msg){
+  errorBox.textContent = msg;
+  errorBox.classList.add("activeBox");
+  resultBox.classList.remove("activeBox");
+}
+function hideError(){
+  errorBox.classList.remove("activeBox");
+}
+document.getElementById("startBtn").onclick = ()=>{
+  hideError();
+  const tweetId = getTweetId(postUrl.value.trim());
+  const text = replyText.value.trim();
+  if(!postUrl.value.trim()) return showError("XのURLを入力してください。");
+  if(!tweetId) return showError("投稿IDを取得できませんでした。");
+  if(!text) return showError("リプ文章を入力してください。");
+  const finalUrl =
+    `https://twitter.com/intent/tweet?in_reply_to=${tweetId}&text=${encodeURIComponent(text)}`;
+  resultUrl.textContent = finalUrl;
+  openBtn.href = finalUrl;
+  resultBox.classList.add("activeBox");
+};
+document.getElementById("copyBtn").onclick = async ()=>{
+  await navigator.clipboard.writeText(resultUrl.textContent);
+  document.getElementById("copyBtn").textContent = "コピーしました！";
+  setTimeout(()=>document.getElementById("copyBtn").textContent="URLをコピー",1500);
+};
+document.getElementById("clearBtn").onclick = ()=>{
+  postUrl.value = "";
+  replyText.value = "";
+  resultBox.classList.remove("activeBox");
+  hideError();
+  updateCount();
+};
+replyText.addEventListener("input", updateCount);
+renderTemplates();
+updateCount();
+</script>
+</body>
+</html>

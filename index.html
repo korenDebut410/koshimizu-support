@@ -307,6 +307,7 @@ button,a{
   <b>完成URL</b>
   <div class="urlbox" id="resultUrl"></div>
   <div class="row">
+    <button class="ghost" id="shortenBtn">短縮URLを作成</button>
     <button class="sub" id="copyBtn">URLをコピー</button>
     <a class="main" id="openBtn" href="#" target="_blank">リプ画面を開く</a>
   </div>
@@ -392,6 +393,8 @@ const openBtn = document.getElementById("openBtn");
 const modal = document.getElementById("modal");
 const modalTitle = document.getElementById("modalTitle");
 const modalText = document.getElementById("modalText");
+const shortenBtn = document.getElementById("shortenBtn");
+
 function saveTemplates(){
   localStorage.setItem("templatesData", JSON.stringify(templatesData));
 }
@@ -432,6 +435,7 @@ function renderTemplates(){
         <button class="fullBtn fullTextBtn">▼全文を見る</button>
         <div class="row">
           <button class="sub useBtn">この文章を使う</button>
+          <button class="sub templateCopyBtn">コピー</button>
           <button class="main quickOpenBtn">これでリプ画面を開く</button>
           <button class="catFavBtn favBtn ${item.favorite ? "isFavorite" : ""}" title="お気に入り">${catIcon(item.favorite)}</button>
           ${item.fixed ? "" : `<button class="ghost deleteBtn">削除</button>`}
@@ -447,6 +451,13 @@ function renderTemplates(){
         card.classList.add("active");
         replyText.value = item.text;
         updateCount();
+      };
+      card.querySelector(".templateCopyBtn").onclick = async ()=>{
+        await navigator.clipboard.writeText(item.text);
+        card.querySelector(".templateCopyBtn").textContent = "コピー済み！";
+        setTimeout(()=>{
+          card.querySelector(".templateCopyBtn").textContent = "コピー";
+        },1500);
       };
       card.querySelector(".quickOpenBtn").onclick = ()=>{
         const tweetId = getTweetId(postUrl.value.trim());
@@ -528,6 +539,70 @@ function showError(msg){
 function hideError(){
   errorBox.classList.remove("activeBox");
 }
+
+function shortenWithIsGd(longUrl){
+  return new Promise((resolve,reject)=>{
+    const callbackName = "isgdCallback_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+    const script = document.createElement("script");
+
+    const timer = setTimeout(()=>{
+      cleanup();
+      reject(new Error("短縮URLの作成に時間がかかっています。"));
+    },10000);
+
+    function cleanup(){
+      clearTimeout(timer);
+      delete window[callbackName];
+      script.remove();
+    }
+
+    window[callbackName] = data=>{
+      cleanup();
+      if(data && data.shorturl){
+        resolve(data.shorturl);
+      }else{
+        reject(new Error(data?.errormessage || "短縮URLを作成できませんでした。"));
+      }
+    };
+
+    script.onerror = ()=>{
+      cleanup();
+      reject(new Error("短縮URLサービスに接続できませんでした。"));
+    };
+
+    script.src =
+      `https://is.gd/create.php?format=json&callback=${callbackName}&url=${encodeURIComponent(longUrl)}`;
+
+    document.body.appendChild(script);
+  });
+}
+
+shortenBtn.onclick = async ()=>{
+  hideError();
+
+  const longUrl = resultUrl.textContent.trim();
+
+  if(!longUrl){
+    return showError("先にURLを作成してください。");
+  }
+
+  shortenBtn.disabled = true;
+  shortenBtn.textContent = "短縮中...";
+
+  try{
+    const shortUrl = await shortenWithIsGd(longUrl);
+    resultUrl.textContent = shortUrl;
+    openBtn.href = shortUrl;
+    shortenBtn.textContent = "短縮しました！";
+    setTimeout(()=>shortenBtn.textContent = "短縮URLを作成",1500);
+  }catch(error){
+    showError(error.message);
+    shortenBtn.textContent = "短縮URLを作成";
+  }finally{
+    shortenBtn.disabled = false;
+  }
+};
+
 document.getElementById("startBtn").onclick = ()=>{
   hideError();
   const tweetId = getTweetId(postUrl.value.trim());

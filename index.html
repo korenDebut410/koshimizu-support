@@ -97,28 +97,31 @@ button,a{
 }
 .catFavBtn path{
   fill:white;
-  stroke:#8fd3a8;
-  stroke-width:8;
+  stroke:#000;
+  stroke-width:7;
   stroke-linejoin:round;
+  stroke-linecap:round;
 }
 .catFavBtn.isFavorite path{
   fill:#ffd84d;
-  stroke:#e4b935;
+  stroke:#000;
 }
 .addHead{
   display:flex;
   align-items:center;
-  gap:14px;
-  flex-wrap:wrap;
+  gap:18px;
+  flex-wrap:nowrap;
   margin-top:22px;
 }
 .addHead h2{
   margin:0;
+  white-space:nowrap;
 }
 .addNote{
   color:#66788a;
   font-size:13px;
   line-height:1.5;
+  margin-top:4px;
 }
 .result,.error{
   display:none;
@@ -286,8 +289,22 @@ function saveTemplates(){
 }
 function catIcon(isFavorite){
   return `
-    <svg viewBox="0 0 220 170" aria-hidden="true">
-      <path d="M36 16 L92 55 Q110 48 128 55 L184 16 Q194 12 194 26 L190 88 Q205 122 184 144 Q160 166 110 166 Q60 166 36 144 Q15 122 30 88 L26 26 Q26 12 36 16 Z"></path>
+    <svg viewBox="0 0 240 220" aria-hidden="true">
+      <path d="
+        M60 36
+        L108 70
+        Q120 62 132 70
+        L180 36
+        Q193 27 192 45
+        L188 96
+        Q207 126 198 157
+        Q184 204 120 205
+        Q56 204 42 157
+        Q33 126 52 96
+        L48 45
+        Q47 27 60 36
+        Z
+      "></path>
     </svg>
   `;
 }

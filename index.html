@@ -257,14 +257,17 @@ const defaultTemplates = [
     favoriteOrder:0
   }
 ];
+
 let savedTemplates = JSON.parse(localStorage.getItem("templatesData") || "null");
 let templatesData = savedTemplates || defaultTemplates;
+
 defaultTemplates.forEach(defaultItem=>{
   const exists = templatesData.some(item=>item.id === defaultItem.id);
   if(!exists){
     templatesData.unshift(defaultItem);
   }
 });
+
 templatesData = templatesData.map(item=>{
   const fixedDefault = defaultTemplates.find(defaultItem=>defaultItem.id === item.id);
   if(fixedDefault){
@@ -272,7 +275,13 @@ templatesData = templatesData.map(item=>{
   }
   return {...item, fixed:false, favoriteOrder:item.favoriteOrder || 0};
 });
+
+templatesData = templatesData.filter((item, index, self)=>{
+  return index === self.findIndex(t=>t.id === item.id);
+});
+
 let favoriteCounter = Math.max(0, ...templatesData.map(item=>item.favoriteOrder || 0));
+
 const templates = document.getElementById("templates");
 const replyText = document.getElementById("replyText");
 const charCount = document.getElementById("charCount");
@@ -284,9 +293,11 @@ const openBtn = document.getElementById("openBtn");
 const modal = document.getElementById("modal");
 const modalTitle = document.getElementById("modalTitle");
 const modalText = document.getElementById("modalText");
+
 function saveTemplates(){
   localStorage.setItem("templatesData", JSON.stringify(templatesData));
 }
+
 function catIcon(isFavorite){
   return `
     <svg viewBox="0 0 240 220" aria-hidden="true">
@@ -308,6 +319,7 @@ function catIcon(isFavorite){
     </svg>
   `;
 }
+
 function renderTemplates(){
   templates.innerHTML = "";
   [...templatesData]
@@ -377,9 +389,11 @@ function renderTemplates(){
       templates.appendChild(card);
     });
 }
+
 function updateCount(){
   charCount.textContent = replyText.value.length;
 }
+
 document.getElementById("addTemplateBtn").onclick = ()=>{
   const title = document.getElementById("newTitle").value.trim();
   const text = document.getElementById("newText").value.trim();
@@ -400,6 +414,7 @@ document.getElementById("addTemplateBtn").onclick = ()=>{
   document.getElementById("newTitle").value = "";
   document.getElementById("newText").value = "";
 };
+
 document.getElementById("resetTemplatesBtn").onclick = ()=>{
   if(confirm("追加したテンプレも消えて、初期状態に戻ります。よろしいですか？")){
     templatesData = defaultTemplates;
@@ -408,18 +423,22 @@ document.getElementById("resetTemplatesBtn").onclick = ()=>{
     renderTemplates();
   }
 };
+
 function getTweetId(url){
   const match = url.match(/status\/(\d+)/);
   return match ? match[1] : "";
 }
+
 function showError(msg){
   errorBox.textContent = msg;
   errorBox.classList.add("activeBox");
   resultBox.classList.remove("activeBox");
 }
+
 function hideError(){
   errorBox.classList.remove("activeBox");
 }
+
 document.getElementById("startBtn").onclick = ()=>{
   hideError();
   const tweetId = getTweetId(postUrl.value.trim());
@@ -433,11 +452,13 @@ document.getElementById("startBtn").onclick = ()=>{
   openBtn.href = finalUrl;
   resultBox.classList.add("activeBox");
 };
+
 document.getElementById("copyBtn").onclick = async ()=>{
   await navigator.clipboard.writeText(resultUrl.textContent);
   document.getElementById("copyBtn").textContent = "コピーしました！";
   setTimeout(()=>document.getElementById("copyBtn").textContent="URLをコピー",1500);
 };
+
 document.getElementById("clearBtn").onclick = ()=>{
   postUrl.value = "";
   replyText.value = "";
@@ -445,14 +466,17 @@ document.getElementById("clearBtn").onclick = ()=>{
   hideError();
   updateCount();
 };
+
 document.getElementById("closeModalBtn").onclick = ()=>{
   modal.classList.remove("active");
 };
+
 modal.onclick = e=>{
   if(e.target === modal){
     modal.classList.remove("active");
   }
 };
+
 replyText.addEventListener("input", updateCount);
 saveTemplates();
 renderTemplates();

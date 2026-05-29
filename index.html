@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>XリプURLメーカー</title>
+<title>小清水蓮布教メーカー</title>
 <style>
 *{box-sizing:border-box}
 body{
@@ -63,7 +63,7 @@ button,a{
   background:#fff;
   box-shadow:0 8px 22px rgba(70,130,180,.1);
 }
-.card.favorite{order:-1;border-color:#1d9bf0}
+.card.favorite{order:-1;border-color:#f2c94c}
 .card.active{outline:4px solid rgba(29,155,240,.18)}
 .card-title{font-weight:900;margin-bottom:8px}
 .card-text{
@@ -81,6 +81,44 @@ button,a{
   background:none;
   color:#1d9bf0;
   font-weight:900;
+}
+.catFavBtn{
+  width:44px;
+  height:38px;
+  padding:0;
+  background:white;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.catFavBtn svg{
+  width:42px;
+  height:36px;
+}
+.catFavBtn path{
+  fill:white;
+  stroke:#8fd3a8;
+  stroke-width:8;
+  stroke-linejoin:round;
+}
+.catFavBtn.isFavorite path{
+  fill:#ffd84d;
+  stroke:#e4b935;
+}
+.addHead{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  flex-wrap:wrap;
+  margin-top:22px;
+}
+.addHead h2{
+  margin:0;
+}
+.addNote{
+  color:#66788a;
+  font-size:13px;
+  line-height:1.5;
 }
 .result,.error{
   display:none;
@@ -136,14 +174,17 @@ button,a{
 </head>
 <body>
 <main class="app">
-<h1>XリプURLメーカー</h1>
+<h1>小清水蓮布教メーカー</h1>
 <p>XのURLを貼って、布教テンプレを選んで、返信用URLを作れます。テンプレ追加・お気に入り保存もできます。</p>
-<p class="notice">※この布教テンプレはデモ版として @2OO6_O41O 様のポストを引用しています。</p>
+<p class="notice">※ この布教テンプレは@2OO6_O41O 様のポストを引用しています。</p>
 <label>① XのポストURL</label>
 <input id="postUrl" placeholder="https://x.com/xxxxx/status/1234567890">
 <h2>② 布教テンプレ</h2>
 <div class="templates" id="templates"></div>
-<h2>テンプレを追加</h2>
+<div class="addHead">
+  <h2>テンプレを追加</h2>
+  <div class="addNote">ご自身のテンプレがあれば<br>登録して使えます！</div>
+</div>
 <label>テンプレ名</label>
 <input id="newTitle" placeholder="例：丁寧お願い / 短文 / 熱量高め">
 <label>テンプレ本文</label>
@@ -181,31 +222,54 @@ button,a{
 <script>
 const defaultTemplates = [
   {
-    id: crypto.randomUUID(),
+    id:"default-1",
+    fixed:true,
     title:"布教テンプレ①｜静かに闘志タイプ",
     text:`おすすめから失礼します！小清水蓮くんを布教させてください🐱このオーディションでデビューしたいという気持ちが誰よりも強いと話していて、一緒に頑張る仲間からも「デビューしたい気持ちが伝わる」と言われるほど、静かに闘志を燃やしているアツい練習生です。投票のご検討よろしくお願いします🙇‍♀️`,
-    favorite:true
+    favorite:true,
+    favoriteOrder:1
   },
   {
-    id: crypto.randomUUID(),
+    id:"default-2",
+    fixed:true,
     title:"布教テンプレ②｜グローバルランカー",
     text:`おすすめから失礼します！小清水蓮くんを布教させてください🐱今回グローバルランカーでファイナルへの出場を手にし、まさに「新世界」の申し子です！日本からも世界からと注目の集まる彼のビジュアルは絶対にデビューメンバーに必要だと思っています！投票のご検討よろしくお願いします🙇‍♀️`,
-    favorite:false
+    favorite:false,
+    favoriteOrder:0
   },
   {
-    id: crypto.randomUUID(),
+    id:"default-3",
+    fixed:true,
     title:"布教テンプレ③｜ギャップ沼",
     text:`おすすめから失礼します！小清水蓮くんを布教させてください🐱可愛らしいこのビジュアルで元々愛嬌したりするのは得意ではなかったり、自認はクールだったり、しっかり者で自分の意見をズバッと言える漢気を持っています。ぜひそのギャップに溺れてほしいです！投票のご検討よろしくお願いします🙇‍♀️`,
-    favorite:false
+    favorite:false,
+    favoriteOrder:0
   },
   {
-    id: crypto.randomUUID(),
+    id:"default-4",
+    fixed:true,
     title:"布教テンプレ④｜努力家・求心力",
     text:`おすすめから失礼します！小清水蓮くんを布教させてください🐱前世や活動歴のない中初回8位に入れるほどの求心力があり、デビューグループのファン層の幅を必ず広げてくれると思います。分量が無い中でも朝練に一番に来るなど、ずっと真面目に頑張っていました。投票のご検討よろしくお願いします🙇‍♀️`,
-    favorite:false
+    favorite:false,
+    favoriteOrder:0
   }
 ];
-let templatesData = JSON.parse(localStorage.getItem("templatesData") || "null") || defaultTemplates;
+let savedTemplates = JSON.parse(localStorage.getItem("templatesData") || "null");
+let templatesData = savedTemplates || defaultTemplates;
+defaultTemplates.forEach(defaultItem=>{
+  const exists = templatesData.some(item=>item.id === defaultItem.id);
+  if(!exists){
+    templatesData.unshift(defaultItem);
+  }
+});
+templatesData = templatesData.map(item=>{
+  const fixedDefault = defaultTemplates.find(defaultItem=>defaultItem.id === item.id);
+  if(fixedDefault){
+    return {...fixedDefault, favorite:item.favorite ?? fixedDefault.favorite, favoriteOrder:item.favoriteOrder ?? fixedDefault.favoriteOrder};
+  }
+  return {...item, fixed:false, favoriteOrder:item.favoriteOrder || 0};
+});
+let favoriteCounter = Math.max(0, ...templatesData.map(item=>item.favoriteOrder || 0));
 const templates = document.getElementById("templates");
 const replyText = document.getElementById("replyText");
 const charCount = document.getElementById("charCount");
@@ -220,22 +284,32 @@ const modalText = document.getElementById("modalText");
 function saveTemplates(){
   localStorage.setItem("templatesData", JSON.stringify(templatesData));
 }
+function catIcon(isFavorite){
+  return `
+    <svg viewBox="0 0 220 170" aria-hidden="true">
+      <path d="M36 16 L92 55 Q110 48 128 55 L184 16 Q194 12 194 26 L190 88 Q205 122 184 144 Q160 166 110 166 Q60 166 36 144 Q15 122 30 88 L26 26 Q26 12 36 16 Z"></path>
+    </svg>
+  `;
+}
 function renderTemplates(){
   templates.innerHTML = "";
   [...templatesData]
-    .sort((a,b)=> Number(b.favorite) - Number(a.favorite))
+    .sort((a,b)=>{
+      if(a.favorite && b.favorite) return (a.favoriteOrder || 0) - (b.favoriteOrder || 0);
+      return Number(b.favorite) - Number(a.favorite);
+    })
     .forEach(item=>{
       const card = document.createElement("div");
       card.className = "card" + (item.favorite ? " favorite" : "");
       card.innerHTML = `
-        <div class="card-title">${item.favorite ? "⭐ " : ""}${item.title}</div>
+        <div class="card-title">${item.title}</div>
         <div class="card-text">${item.text}</div>
         <button class="fullBtn fullTextBtn">▼全文を見る</button>
         <div class="row">
           <button class="sub useBtn">この文章を使う</button>
           <button class="main quickOpenBtn">これでリプ画面を開く</button>
-          <button class="ghost favBtn">${item.favorite ? "お気に入り解除" : "お気に入り"}</button>
-          <button class="ghost deleteBtn">削除</button>
+          <button class="catFavBtn favBtn ${item.favorite ? "isFavorite" : ""}" title="お気に入り">${catIcon(item.favorite)}</button>
+          ${item.fixed ? "" : `<button class="ghost deleteBtn">削除</button>`}
         </div>
       `;
       card.querySelector(".fullTextBtn").onclick = ()=>{
@@ -264,16 +338,25 @@ function renderTemplates(){
       };
       card.querySelector(".favBtn").onclick = ()=>{
         item.favorite = !item.favorite;
+        if(item.favorite){
+          favoriteCounter += 1;
+          item.favoriteOrder = favoriteCounter;
+        }else{
+          item.favoriteOrder = 0;
+        }
         saveTemplates();
         renderTemplates();
       };
-      card.querySelector(".deleteBtn").onclick = ()=>{
-        if(confirm("このテンプレを削除しますか？")){
-          templatesData = templatesData.filter(t=>t.id !== item.id);
-          saveTemplates();
-          renderTemplates();
-        }
-      };
+      const deleteBtn = card.querySelector(".deleteBtn");
+      if(deleteBtn){
+        deleteBtn.onclick = ()=>{
+          if(confirm("このテンプレを削除しますか？")){
+            templatesData = templatesData.filter(t=>t.id !== item.id);
+            saveTemplates();
+            renderTemplates();
+          }
+        };
+      }
       templates.appendChild(card);
     });
 }
@@ -289,9 +372,11 @@ document.getElementById("addTemplateBtn").onclick = ()=>{
   }
   templatesData.push({
     id: crypto.randomUUID(),
+    fixed:false,
     title,
     text,
-    favorite:false
+    favorite:false,
+    favoriteOrder:0
   });
   saveTemplates();
   renderTemplates();
@@ -301,6 +386,7 @@ document.getElementById("addTemplateBtn").onclick = ()=>{
 document.getElementById("resetTemplatesBtn").onclick = ()=>{
   if(confirm("追加したテンプレも消えて、初期状態に戻ります。よろしいですか？")){
     templatesData = defaultTemplates;
+    favoriteCounter = 1;
     saveTemplates();
     renderTemplates();
   }
@@ -351,6 +437,7 @@ modal.onclick = e=>{
   }
 };
 replyText.addEventListener("input", updateCount);
+saveTemplates();
 renderTemplates();
 updateCount();
 </script>

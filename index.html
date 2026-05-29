@@ -16,13 +16,61 @@ body{
   margin:0;
   padding:22px;
   font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
-  background:#f7fbff;
+  background:linear-gradient(135deg,#ffd56a,#ffb347);
   color:#203040;
+}
+.opening{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  background:linear-gradient(135deg,#ffe36d,#ff9f2f);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:opacity .7s ease, visibility .7s ease;
+}
+.opening.hide{
+  opacity:0;
+  visibility:hidden;
+}
+.openingText{
+  font-family:"Waosagi",sans-serif;
+  font-size:42px;
+  color:#ff9f00;
+  text-shadow:
+    -2px -2px 0 #fff,
+     2px -2px 0 #fff,
+    -2px  2px 0 #fff,
+     2px  2px 0 #fff,
+     0 5px 14px rgba(0,0,0,.25);
+}
+.claw{
+  position:absolute;
+  width:180px;
+  height:150px;
+  transform:rotate(-18deg);
+}
+.claw span{
+  position:absolute;
+  top:20px;
+  width:16px;
+  height:0;
+  background:white;
+  border-radius:999px;
+  box-shadow:0 0 12px rgba(255,255,255,.9);
+  animation:scratch .8s ease forwards;
+}
+.claw span:nth-child(1){left:30px;animation-delay:.25s}
+.claw span:nth-child(2){left:80px;animation-delay:.35s}
+.claw span:nth-child(3){left:130px;animation-delay:.45s}
+@keyframes scratch{
+  from{height:0}
+  to{height:130px}
 }
 .app{
   max-width:920px;
   margin:auto;
-  background:white;
+  background:rgba(255,255,255,.95);
   border-radius:28px;
   padding:24px;
   box-shadow:0 18px 50px rgba(70,130,180,.18);
@@ -31,6 +79,13 @@ h1{
   margin:0 0 8px;
   font-size:42px;
   font-family:"Waosagi",sans-serif;
+  color:#ff9f00;
+  text-shadow:
+    -2px -2px 0 #fff,
+     2px -2px 0 #fff,
+    -2px  2px 0 #fff,
+     2px  2px 0 #fff,
+     0 5px 14px rgba(0,0,0,.25);
 }
 p{color:#66788a;line-height:1.7}
 .notice{
@@ -210,6 +265,15 @@ button,a{
 </style>
 </head>
 <body>
+<div class="opening" id="opening">
+  <div class="openingText">小清水蓮</div>
+  <div class="claw">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
 <main class="app">
 <h1>
   小清水蓮<br>
@@ -513,9 +577,15 @@ if(gallery){
     gallery.appendChild(img);
   });
 }
+setTimeout(()=>{
+  const opening = document.getElementById("opening");
+  if(opening){
+    opening.classList.add("hide");
+  }
+},1600);
 saveTemplates();
 renderTemplates();
 updateCount();
 </script>
 </body>
-</html>
+</html

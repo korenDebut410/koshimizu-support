@@ -37,12 +37,32 @@ body{
   font-family:"KeiFont",sans-serif;
   font-size:42px;
   color:#ff9f00;
+
   text-shadow:
     -2px -2px 0 #fff,
      2px -2px 0 #fff,
     -2px  2px 0 #fff,
      2px  2px 0 #fff,
      0 5px 14px rgba(0,0,0,.25);
+
+  animation:titlePop .9s ease forwards;
+}
+
+@keyframes titlePop{
+  0%{
+    opacity:0;
+    transform:translateY(40px) scale(.8);
+  }
+
+  70%{
+    opacity:1;
+    transform:translateY(-5px) scale(1.05);
+  }
+
+  100%{
+    opacity:1;
+    transform:translateY(0) scale(1);
+  }
 }
 
 .app{

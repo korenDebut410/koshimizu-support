@@ -175,6 +175,24 @@ button,a{
   line-height:1.8;
   color:#203040;
 }
+.galleryTitle{
+  margin-top:30px;
+  margin-bottom:8px;
+}
+.gallery{
+  display:flex;
+  gap:12px;
+  overflow-x:auto;
+  padding:8px 0 16px;
+  scroll-snap-type:x proximity;
+}
+.gallery img{
+  width:220px;
+  border-radius:18px;
+  flex-shrink:0;
+  scroll-snap-align:start;
+  box-shadow:0 6px 18px rgba(0,0,0,.12);
+}
 </style>
 </head>
 <body>
@@ -217,6 +235,9 @@ button,a{
     <a class="main" id="openBtn" href="#" target="_blank">リプ画面を開く</a>
   </div>
 </section>
+<h2 class="galleryTitle">⑤ 布教画像</h2>
+<p class="notice">画像を長押しすると保存できます。</p>
+<div id="gallery" class="gallery"></div>
 </main>
 <div class="modal" id="modal">
   <div class="modal-box">
@@ -228,6 +249,18 @@ button,a{
   </div>
 </div>
 <script>
+const fukyoImages = [
+  "IMG_8777.jpeg",
+  "IMG_8778.jpeg",
+  "IMG_8901.jpeg",
+  "IMG_8902.jpeg",
+  "IMG_8903.jpeg",
+  "IMG_8904.jpeg",
+  "IMG_8905.jpeg",
+  "IMG_8906.jpeg",
+  "IMG_8907.jpeg"
+];
+
 const defaultTemplates = [
   {
     id:"default-1",
@@ -483,6 +516,18 @@ modal.onclick = e=>{
 };
 
 replyText.addEventListener("input", updateCount);
+
+const gallery = document.getElementById("gallery");
+
+if(gallery){
+  fukyoImages.forEach(src=>{
+    const img = document.createElement("img");
+    img.src = src;
+    img.loading = "lazy";
+    gallery.appendChild(img);
+  });
+}
+
 saveTemplates();
 renderTemplates();
 updateCount();

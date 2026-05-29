@@ -44,6 +44,41 @@ body{
      2px  2px 0 #fff,
      0 5px 14px rgba(0,0,0,.25);
 }
+
+.claw{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  pointer-events:none;
+}
+
+.claw img{
+  position:absolute;
+  width:420px;
+  left:50%;
+  top:50%;
+  opacity:0;
+  transform:translate(-250%,-250%) scale(.1) rotate(-18deg);
+  animation:slash .35s cubic-bezier(.2,1,.2,1) forwards;
+  animation-delay:.15s;
+}
+
+@keyframes slash{
+  0%{
+    opacity:0;
+    transform:translate(-250%,-250%) scale(.1) rotate(-18deg);
+  }
+
+  20%{
+    opacity:1;
+  }
+
+  100%{
+    opacity:1;
+    transform:translate(-50%,-50%) scale(1) rotate(-18deg);
+  }
+}
+
 .app{
   max-width:920px;
   margin:auto;

@@ -23,6 +23,10 @@ body{
 }
 h1{margin:0 0 8px;font-size:30px}
 p{color:#66788a;line-height:1.7}
+.notice{
+  color:#d33;
+  font-weight:900;
+}
 label{display:block;margin:18px 0 8px;font-weight:800}
 input,textarea{
   width:100%;
@@ -71,6 +75,13 @@ button,a{
   -webkit-box-orient:vertical;
   overflow:hidden;
 }
+.fullBtn{
+  margin-top:10px;
+  padding:0;
+  background:none;
+  color:#1d9bf0;
+  font-weight:900;
+}
 .result,.error{
   display:none;
   margin-top:18px;
@@ -90,12 +101,44 @@ button,a{
   font-size:13px;
 }
 .small{font-size:12px;color:#66788a}
+.modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.35);
+  padding:22px;
+  z-index:999;
+}
+.modal.active{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.modal-box{
+  width:min(560px,100%);
+  max-height:80vh;
+  overflow:auto;
+  background:white;
+  border-radius:24px;
+  padding:22px;
+  box-shadow:0 18px 50px rgba(0,0,0,.22);
+}
+.modal-title{
+  font-weight:900;
+  margin-bottom:12px;
+}
+.modal-text{
+  white-space:pre-wrap;
+  line-height:1.8;
+  color:#203040;
+}
 </style>
 </head>
 <body>
 <main class="app">
 <h1>XリプURLメーカー</h1>
 <p>XのURLを貼って、布教テンプレを選んで、返信用URLを作れます。テンプレ追加・お気に入り保存もできます。</p>
+<p class="notice">※この布教テンプレはデモ版として @2OO6_O41O 様のポストを引用しています。</p>
 <label>① XのポストURL</label>
 <input id="postUrl" placeholder="https://x.com/xxxxx/status/1234567890">
 <h2>② 布教テンプレ</h2>
@@ -126,6 +169,15 @@ button,a{
   </div>
 </section>
 </main>
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="modal-text" id="modalText"></div>
+    <div class="row">
+      <button class="ghost" id="closeModalBtn">閉じる</button>
+    </div>
+  </div>
+</div>
 <script>
 const defaultTemplates = [
   {
@@ -162,6 +214,9 @@ const errorBox = document.getElementById("errorBox");
 const resultBox = document.getElementById("resultBox");
 const resultUrl = document.getElementById("resultUrl");
 const openBtn = document.getElementById("openBtn");
+const modal = document.getElementById("modal");
+const modalTitle = document.getElementById("modalTitle");
+const modalText = document.getElementById("modalText");
 function saveTemplates(){
   localStorage.setItem("templatesData", JSON.stringify(templatesData));
 }
@@ -175,6 +230,7 @@ function renderTemplates(){
       card.innerHTML = `
         <div class="card-title">${item.favorite ? "⭐ " : ""}${item.title}</div>
         <div class="card-text">${item.text}</div>
+        <button class="fullBtn fullTextBtn">▼全文を見る</button>
         <div class="row">
           <button class="sub useBtn">この文章を使う</button>
           <button class="main quickOpenBtn">これでリプ画面を開く</button>
@@ -182,6 +238,11 @@ function renderTemplates(){
           <button class="ghost deleteBtn">削除</button>
         </div>
       `;
+      card.querySelector(".fullTextBtn").onclick = ()=>{
+        modalTitle.textContent = item.title;
+        modalText.textContent = item.text;
+        modal.classList.add("active");
+      };
       card.querySelector(".useBtn").onclick = ()=>{
         document.querySelectorAll(".card").forEach(c=>c.classList.remove("active"));
         card.classList.add("active");
@@ -280,6 +341,14 @@ document.getElementById("clearBtn").onclick = ()=>{
   resultBox.classList.remove("activeBox");
   hideError();
   updateCount();
+};
+document.getElementById("closeModalBtn").onclick = ()=>{
+  modal.classList.remove("active");
+};
+modal.onclick = e=>{
+  if(e.target === modal){
+    modal.classList.remove("active");
+  }
 };
 replyText.addEventListener("input", updateCount);
 renderTemplates();

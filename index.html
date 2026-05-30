@@ -447,11 +447,23 @@ function renderTemplates(){
         modal.classList.add("active");
       };
       card.querySelector(".useBtn").onclick = ()=>{
-        document.querySelectorAll(".card").forEach(c=>c.classList.remove("active"));
-        card.classList.add("active");
-        replyText.value = item.text;
-        updateCount();
-      };
+  document.querySelectorAll(".card").forEach(c=>c.classList.remove("active"));
+  card.classList.add("active");
+
+  replyText.value = item.text;
+  updateCount();
+
+  const tweetId = getTweetId(postUrl.value.trim());
+
+  if(postUrl.value.trim() && tweetId){
+    const finalUrl =
+      `https://twitter.com/intent/tweet?in_reply_to=${tweetId}&text=${encodeURIComponent(item.text)}`;
+
+    resultUrl.textContent = finalUrl;
+    openBtn.href = finalUrl;
+    resultBox.classList.add("activeBox");
+  }
+};
       card.querySelector(".templateCopyBtn").onclick = async ()=>{
         await navigator.clipboard.writeText(item.text);
         card.querySelector(".templateCopyBtn").textContent = "コピー済み！";

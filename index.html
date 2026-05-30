@@ -585,32 +585,6 @@ shortenBtn.onclick = async ()=>{
   }
 };
 
-shortenBtn.onclick = async ()=>{
-  hideError();
-
-  const longUrl = resultUrl.textContent.trim();
-
-  if(!longUrl){
-    return showError("先にURLを作成してください。");
-  }
-
-  shortenBtn.disabled = true;
-  shortenBtn.textContent = "短縮中...";
-
-  try{
-    const shortUrl = await shortenWithIsGd(longUrl);
-    resultUrl.textContent = shortUrl;
-    openBtn.href = shortUrl;
-    shortenBtn.textContent = "短縮しました！";
-    setTimeout(()=>shortenBtn.textContent = "短縮URLを作成",1500);
-  }catch(error){
-    showError(error.message);
-    shortenBtn.textContent = "短縮URLを作成";
-  }finally{
-    shortenBtn.disabled = false;
-  }
-};
-
 document.getElementById("startBtn").onclick = ()=>{
   hideError();
   const tweetId = getTweetId(postUrl.value.trim());
